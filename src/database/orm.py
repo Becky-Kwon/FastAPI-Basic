@@ -1,3 +1,8 @@
+# ORM = ORM(Object-Relational Mapping)
+# 관계형 데이터베이스를 객체 지향 프로그래밍(OOP)에 대응하여 사용하는 프로그래밍 기술
+# 하나의 테이블 = 하나의 클래스
+# 하나의 행(레코드) = 하나의 객체
+
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import declarative_base
 
