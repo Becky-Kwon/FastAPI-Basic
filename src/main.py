@@ -5,10 +5,14 @@
 # pip install uvicorn  -> 4(매우 가벼운) ASGI 서버
 # (fastapi framework만으로는 웹 개발을 할 수 없고, ASGI와 호환되는 웹 서버가 필요함)
 
-from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI, Body, HTTPException, Depends
 from pydantic import BaseModel
 from database.connection import get_db
 from sqlalchemy.orm import Session
+
+from database.repository import get_todos
+from database.orm import ToDo
+from typing import List
 
 app = FastAPI()
 
@@ -45,16 +49,20 @@ todo_data = {
 @app.get("/todos", status_code= 200) # resource는 복수형
 # query parameter 사용해보기 -> order
 # order값이 없어도 동작 할 수 있게 default로 None 하기
+# GET API 전체조회
 def get_todos_handler(
         order : str | None = None,
         session: Session = Depends(get_db)
-
-    ) -> list:
-    # 아래 대신에 DB사용해서 조회해보기
-    ret = list(todo_data.values())
+    ) :
+    # ret = list(todo_data.values())
+    # if order and order == "DESC" :
+    #     return ret[::-1]
+    # return ret
+    # DB사용해서 조회해보기
+    todos: List[ToDo] = get_todos(session = session)
     if order and order == "DESC" :
-        return ret[::-1]
-    return ret
+        return todos[::-1]
+    return todos
 
 # GET API 단일 조회  {} : sub path
 @app.get("/todos/{todo_id}" , status_code= 200)
