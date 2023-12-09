@@ -7,6 +7,8 @@
 
 from fastapi import FastAPI, Body, HTTPException
 from pydantic import BaseModel
+from database.connection import get_db
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
@@ -43,7 +45,12 @@ todo_data = {
 @app.get("/todos", status_code= 200) # resource는 복수형
 # query parameter 사용해보기 -> order
 # order값이 없어도 동작 할 수 있게 default로 None 하기
-def get_todos_handler(order : str | None = None) -> list:
+def get_todos_handler(
+        order : str | None = None,
+        session: Session = Depends(get_db)
+
+    ) -> list:
+    # 아래 대신에 DB사용해서 조회해보기
     ret = list(todo_data.values())
     if order and order == "DESC" :
         return ret[::-1]
