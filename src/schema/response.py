@@ -13,6 +13,9 @@ class ToDoSchema(BaseModel):
 
     class Config:
         orm_mode = True
+        # pydantic version 2보다 작아야 함
+        # from_attributes  = True 원래 강의에는 없음
+        # from_attributes=True
 
 class ListToDoResponse(BaseModel):
     todos: List[ToDoSchema]

@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from database.repository import get_todos
 from database.orm import ToDo
 from typing import List
+from schema.response import ListToDoResponse, ToDoSchema
 
 app = FastAPI()
 
@@ -39,7 +40,7 @@ def health_check_handler():
 def get_todos_handler(
         order : str | None = None,
         session: Session = Depends(get_db)
-    ) :
+    )  -> ListToDoResponse :
     # ret = list(todo_data.values())
     # if order and order == "DESC" :
     #     return ret[::-1]
@@ -47,8 +48,12 @@ def get_todos_handler(
     # DB사용해서 조회해보기
     todos: List[ToDo] = get_todos(session = session)
     if order and order == "DESC" :
-        return todos[::-1]
-    return todos
+        return ListToDoResponse(
+        todos = [ToDoSchema.from_orm(todo) for todo in todos[::-1]]
+        )
+    return ListToDoResponse(
+        todos = [ToDoSchema.from_orm(todo) for todo in todos]
+    )
 
 # 현재 저장해둔 메모리가 따로 없으니 메모리 상에서 data를 만듬!
 todo_data = {
