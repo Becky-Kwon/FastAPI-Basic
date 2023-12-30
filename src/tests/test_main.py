@@ -128,7 +128,7 @@ def test_update_todo(client, mocker):
     response = client.patch("/todos/1", json={"is_done": False})
 
     undone.assert_called_once_with()
-    
+
     assert response.status_code == 200
     assert response.json() ==  {"id": 1, "is_done": False, "contents": "todo"}
 
@@ -142,6 +142,26 @@ def test_update_todo(client, mocker):
     assert response.json() ==  {'detail' : "Todo Not Found"}
  
 
+# 테스트 코드 - DELETE API
+def test_delete_todo(client, mocker):
+    # 204
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = ToDo(id=1, contents="todo", is_done = True)
+        )
+    mocker.patch("main.delete_todo", return_value = None)
+
+    response = client.delete("/todos/1")
+    assert response.status_code == 204
+
+    # 404
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = None
+        )
+    response = client.get("/todos/1")
+    assert response.status_code == 404
+    assert response.json() ==  {'detail' : "Todo Not Found"}
 
 
 
