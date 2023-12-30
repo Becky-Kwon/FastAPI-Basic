@@ -2,14 +2,15 @@ from fastapi.testclient import TestClient
 from database.orm import ToDo
 from main import app
 
-client = TestClient(app= app)
+# fixture 사용하면 정의 할 필요 없음
+# client = TestClient(app= app)
 
-def test_health_check():
+def test_health_check(client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"ping" : "pong"}
 
-def test_get_todos():
+def test_get_todos(client):
     response = client.get("/todos")
     assert response.status_code == 200
     assert response.json() == [
@@ -33,7 +34,7 @@ def test_get_todos():
 # pip install pytest-mock   
 
 
-def test_get_todos_mocking(mocker):
+def test_get_todos_mocking(client, mocker):
     #order = ASC
     mocker.patch("main.get_todos", return_value = [
         ToDo(id=1, contents="FastAPI Section 0", is_done = True),
