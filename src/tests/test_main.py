@@ -13,20 +13,24 @@ def test_health_check(client):
 def test_get_todos(client):
     response = client.get("/todos")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json() == {
+        "todos" :[
             {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
             {"id": 2, "is_done": True, "contents": "FastAPI Section 1"},
-            {"id": 3, "is_done": False, "contents": "FastAPI Section 2"},
+            {"id": 3, "is_done": True, "contents": "FastAPI Section 2"},
             ]
+        }
     
     # order = DESC
     response = client.get("/todos?order=DESC")
     assert response.status_code == 200
-    assert response.json() == [
-            {"id": 3, "is_done": False, "contents": "FastAPI Section 2"},
+    assert response.json() == {
+        "todos" :[
+            {"id": 3, "is_done": True, "contents": "FastAPI Section 2"},
             {"id": 2, "is_done": True, "contents": "FastAPI Section 1"},
             {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
             ]
+        }
 
 # PyTest Mocking 사용해보기
 # Unit Test 를 작성할 때 외부에 의존하는 부분을 임의의 가짜로 대체하는 기법이 자주 사용되는데 이를 모킹 Mocking 이라고 한다.
@@ -42,18 +46,22 @@ def test_get_todos_mocking(client, mocker):
     ])
     response = client.get("/todos")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json() == {
+        "todos" :[
             {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
             {"id": 2, "is_done": False, "contents": "FastAPI Section 1"},
             ]
+        }
     
     # order = DESC
     response = client.get("/todos?order=DESC")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json() == {
+        "todos" :[
             {"id": 2, "is_done": False, "contents": "FastAPI Section 1"},
             {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
             ]
+        }
 
 
 # PyTest Fixture : 
@@ -61,3 +69,29 @@ def test_get_todos_mocking(client, mocker):
     #  client객체를 fixture로 바꿔보기
     # 1. tests 폴더 안에 conftest.py 만들기
 
+
+# 테스트 코드 - GET 단일 조회 API
+def test_get_todo(client, mocker):
+    # 200
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = ToDo(id=1, contents="FastAPI Section 0", is_done = True)
+        )
+    response = client.get("/todos/1")
+    assert response.status_code == 200
+    assert response.json() ==  {"id": 1, "is_done": True, "contents": "FastAPI Section 0"}
+
+    # 404
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = None
+        )
+    response = client.get("/todos/1")
+    assert response.status_code == 404
+    assert response.json() ==  {'detail' : "Todo Not Found"}
+
+
+
+
+## 만약에 pytest를 함수별로 보고 싶다면,
+# pytest tests/test_main.py::test_get_todo 이런식으로 실행하면됨
