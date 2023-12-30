@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from database.repository import get_todos, get_todo_by_todo_id
 from database.orm import ToDo
 from typing import List
-from schema.response import ListToDoResponse, ToDoSchema
+from schema.response import ToDoListSchema, ToDoSchema
 from schema.request import CreateToDoRequest
 
 app = FastAPI()
@@ -41,7 +41,7 @@ def health_check_handler():
 def get_todos_handler(
         order : str | None = None,
         session: Session = Depends(get_db)
-    )  -> ListToDoResponse :
+    )  -> ToDoListSchema :
     # ret = list(todo_data.values())
     # if order and order == "DESC" :
     #     return ret[::-1]
@@ -49,10 +49,10 @@ def get_todos_handler(
     # DB사용해서 조회해보기
     todos: List[ToDo] = get_todos(session = session)
     if order and order == "DESC" :
-        return ListToDoResponse(
+        return ToDoListSchema(
         todos = [ToDoSchema.from_orm(todo) for todo in todos[::-1]]
         )
-    return ListToDoResponse(
+    return ToDoListSchema(
         todos = [ToDoSchema.from_orm(todo) for todo in todos]
     )
 

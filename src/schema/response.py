@@ -17,7 +17,7 @@ class ToDoSchema(BaseModel):
         # from_attributes  = True 원래 강의에는 없음
         # from_attributes=True
 
-class ListToDoResponse(BaseModel):
+class ToDoListSchema(BaseModel):
     todos: List[ToDoSchema]
 
 
