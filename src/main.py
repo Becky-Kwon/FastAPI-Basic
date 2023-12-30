@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from database.connection import get_db
 from sqlalchemy.orm import Session
 
-from database.repository import get_todos, get_todo_by_todo_id, create_todo
+from database.repository import get_todos, get_todo_by_todo_id, create_todo, update_todo
 from database.orm import ToDo
 from typing import List
 from schema.response import ToDoListSchema, ToDoSchema
@@ -109,19 +109,26 @@ def create_todo_handler(
 # PATCH API - 수정
 @app.patch("/todos/{todo_id}", status_code=200 )
 def update_todo_handler(
-        todo_id : int,
-        is_done : bool = Body(..., embed = True)  #  ... 이니깐 required,
-        # fast api는 리퀘스트 바디가 하나밖에 없으면 키값을 생략하고 리퀘스트 바디 안의 데이터만 해석하도록 되어있다.
-        # ->  리퀘스트 바디의 key값을 넣어주고 싶다면 embed = True
+    todo_id : int,
+    is_done : bool = Body(..., embed = True),  #  ... 이니깐 required,
+    # fast api는 리퀘스트 바디가 하나밖에 없으면 키값을 생략하고 리퀘스트 바디 안의 데이터만 해석하도록 되어있다.
+    # ->  리퀘스트 바디의 key값을 넣어주고 싶다면 embed = True
+    session: Session = Depends(get_db)
 ):
-    # is_done만 수정하는 api 만듬 -> Body 사용
-    todo = todo_data.get(todo_id)
+    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
+    # orm.py에 done, undone 메소드로 is_done 인스턴스 가져와서 변경
     if todo:
-        todo['is_done'] = is_done
-        return todo
+        # update
+        todo.done() if is_done else todo.undone() # 여기서 DB까지 수정된건 아님 -> repository에 함수 추가
+        todo : ToDo = update_todo(session=session, todo = todo) 
+        return ToDoSchema.from_orm(todo)
     raise HTTPException(status_code=404, detail="Todo Not Found")
 
-# DB에 저장해두는 게 아니기에 post, patch 해도 서버가 계속 꺼졌다 켜지면서 데이터 저장되지 않음
+
+
+
+# DB에 저장해두는 게 아닐경우, 
+# post, patch 해도 서버가 계속 꺼졌다 켜지면서 데이터 저장되지 않음
 
 # DELETE API - 삭제
 @app.delete("/todos/{todo_id}", status_code= 204)  #204는 응답되는 body가 없음

@@ -31,3 +31,13 @@ class ToDo(Base):
             is_done = request.is_done,
             # id는 DB에서 자동으로 넣어줌
         )
+    
+    # 이렇게 done, undone 만들어서(instance 메소드로 관리) is_done 업데이트 하면 코드 반복 및 유지 보수에 용이함
+    def done(self) -> "ToDo":
+        self.is_done = True
+        return self
+    
+    def undone(self) -> "ToDo":
+        self.is_done = False
+        return self
+
