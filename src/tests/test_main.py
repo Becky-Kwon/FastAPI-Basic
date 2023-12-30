@@ -90,6 +90,28 @@ def test_get_todo(client, mocker):
     assert response.status_code == 404
     assert response.json() ==  {'detail' : "Todo Not Found"}
 
+# 테스트 코드 - POST API
+def test_create_todo(client, mocker):
+    create_spy  = mocker.spy(ToDo, "create")   # main의 ToDo.create 부분을 spy함
+    mocker.patch(
+        "main.create_todo", 
+        return_value = ToDo(id=1, contents="todo", is_done = True)
+        )
+    body = {
+        "contents" : "test",
+        "is_done" : False
+    }
+    # 말이안되게도 test결과 pass 다... mocking에 걸려서 그렀다... -> spy 사용하기
+    response = client.post("/todos", json = body)
+    assert create_spy.spy_return.id is None
+    assert create_spy.spy_return.contents == "test"
+    assert create_spy.spy_return.is_done is False
+    
+    assert response.status_code == 201
+    assert response.json() ==  {"id": 1, "is_done": True, "contents": "todo"}
+
+
+
 
 
 
