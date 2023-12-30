@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from database.connection import get_db
 from sqlalchemy.orm import Session
 
-from database.repository import get_todos, get_todo_by_todo_id
+from database.repository import get_todos, get_todo_by_todo_id, create_todo
 from database.orm import ToDo
 from typing import List
 from schema.response import ToDoListSchema, ToDoSchema
@@ -93,10 +93,18 @@ def get_todo_handler(
 # POST API 생성 -> request body 필요 -> pydantic 사용
 # Refactoring 해줌
 # CreateToDoRequest 모듈 Refactoring으로 request.py로 넘어감
+
+# pydantic으로 받은 데이터를 orm으로 생성해줘야함
 @app.post("/todos", status_code=201)  # 생성 상태코드는 201
-def create_todo_handler(request : CreateToDoRequest):
-    todo_data[request.id] = request.dict()
-    return todo_data[request.id]
+def create_todo_handler(
+    request : CreateToDoRequest,
+    session: Session = Depends(get_db)
+) -> ToDoSchema:
+    todo : ToDo = ToDo.create(request=request)  # id 없음
+    todo : ToDo = create_todo(session=session, todo = todo)  # DB에 넣어졌다가 다시 나와서(refresh) id 생성되어 있음
+    return ToDoSchema.from_orm(todo)
+# DB 에 이렇게 데이터 넣어주면, server를 내렸다가 올려도 데이터가 유지됨.
+
 
 # PATCH API - 수정
 @app.patch("/todos/{todo_id}", status_code=200 )

@@ -5,6 +5,8 @@
 
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import declarative_base
+from schema.request import CreateToDoRequest
+
 
 Base = declarative_base()
 
@@ -20,3 +22,12 @@ class ToDo(Base):
 
     def __repr__(self):
         return f"ToDo(id={self.id}, contents={self.contents}, is_done={self.is_done})"
+
+    # pydantic으로 request body를 전달받아서 그걸 orm 객체로 변환해줌
+    @classmethod
+    def create(cls, request: CreateToDoRequest) -> "ToDo":
+        return cls(
+            contents = request.contents,
+            is_done = request.is_done,
+            # id는 DB에서 자동으로 넣어줌
+        )
