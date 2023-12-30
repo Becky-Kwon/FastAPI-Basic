@@ -4,6 +4,9 @@
 # : async / await 구문을 사용
 # pip install uvicorn  -> 4(매우 가벼운) ASGI 서버
 # (fastapi framework만으로는 웹 개발을 할 수 없고, ASGI와 호환되는 웹 서버가 필요함)
+# pip install pytest
+# pip install httpx
+
 
 from fastapi import FastAPI, Body, HTTPException, Depends
 from pydantic import BaseModel
