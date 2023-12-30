@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from database.orm import ToDo
 from typing import List
@@ -29,4 +29,6 @@ def update_todo(session: Session, todo: ToDo) -> ToDo:
     session.refresh(instance=todo) # DB에서 다시 한번 데이터를 읽어옴 -> todo id 값이 반영되어 있음
     return todo
 
-
+def delete_todo(session: Session, todo_id: int) -> None:
+    session.execute(delete(ToDo).where(ToDo.id == todo_id))
+    session.commit()

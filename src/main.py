@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from database.connection import get_db
 from sqlalchemy.orm import Session
 
-from database.repository import get_todos, get_todo_by_todo_id, create_todo, update_todo
+from database.repository import get_todos, get_todo_by_todo_id, create_todo, update_todo, delete_todo
 from database.orm import ToDo
 from typing import List
 from schema.response import ToDoListSchema, ToDoSchema
@@ -125,19 +125,22 @@ def update_todo_handler(
     raise HTTPException(status_code=404, detail="Todo Not Found")
 
 
-
-
 # DB에 저장해두는 게 아닐경우, 
 # post, patch 해도 서버가 계속 꺼졌다 켜지면서 데이터 저장되지 않음
 
 # DELETE API - 삭제
 @app.delete("/todos/{todo_id}", status_code= 204)  #204는 응답되는 body가 없음
-def delete_todo_handler(todo_id : int):
-    todo = todo_data.pop(todo_id, None) # key error 방지하고자 None
-    if todo:
-        return  #response body 비어져 있는것임
-    # return todo_data
-    raise HTTPException(status_code=404, detail="Todo Not Found")
+def delete_todo_handler(
+    todo_id : int,
+    session: Session = Depends(get_db)
+):
+    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo Not Found")
+    # delete
+    delete_todo(session=session, todo_id=todo_id)
+# 정상으로 삭제되면 204 코드 뜸
+ 
 
 
 ###### 떠오른 질문
