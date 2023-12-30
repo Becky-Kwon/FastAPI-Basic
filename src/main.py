@@ -17,6 +17,7 @@ from database.repository import get_todos, get_todo_by_todo_id
 from database.orm import ToDo
 from typing import List
 from schema.response import ListToDoResponse, ToDoSchema
+from schema.request import CreateToDoRequest
 
 app = FastAPI()
 
@@ -90,11 +91,8 @@ def get_todo_handler(
 # uvicorn main:app --reload -> --reload 옵션 : 코드 변화가 감지되면 자동으로 fastapi를 재시작 함
 
 # POST API 생성 -> request body 필요 -> pydantic 사용
-class CreateToDoRequest(BaseModel):
-    id : int
-    contents : str
-    is_done : bool
-
+# Refactoring 해줌
+# CreateToDoRequest 모듈 Refactoring으로 request.py로 넘어감
 @app.post("/todos", status_code=201)  # 생성 상태코드는 201
 def create_todo_handler(request : CreateToDoRequest):
     todo_data[request.id] = request.dict()
