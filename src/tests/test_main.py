@@ -75,11 +75,11 @@ def test_get_todo(client, mocker):
     # 200
     mocker.patch(
         "main.get_todo_by_todo_id", 
-        return_value = ToDo(id=1, contents="FastAPI Section 0", is_done = True)
+        return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     response = client.get("/todos/1")
     assert response.status_code == 200
-    assert response.json() ==  {"id": 1, "is_done": True, "contents": "FastAPI Section 0"}
+    assert response.json() ==  {"id": 1, "is_done": True, "contents": "todo"}
 
     # 404
     mocker.patch(
@@ -106,10 +106,41 @@ def test_create_todo(client, mocker):
     assert create_spy.spy_return.id is None
     assert create_spy.spy_return.contents == "test"
     assert create_spy.spy_return.is_done is False
-    
+
     assert response.status_code == 201
     assert response.json() ==  {"id": 1, "is_done": True, "contents": "todo"}
 
+
+# 테스트 코드 - PATCH API (Update API)
+def test_update_todo(client, mocker):
+    # 200
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = ToDo(id=1, contents="todo", is_done = True)
+        )
+    
+    undone = mocker.patch.object(ToDo, "undone")
+    mocker.patch(
+        "main.update_todo", 
+        return_value = ToDo(id=1, contents="todo", is_done = False)
+        )
+
+    response = client.patch("/todos/1", json={"is_done": False})
+
+    undone.assert_called_once_with()
+    
+    assert response.status_code == 200
+    assert response.json() ==  {"id": 1, "is_done": False, "contents": "todo"}
+
+    # 404
+    mocker.patch(
+        "main.get_todo_by_todo_id", 
+        return_value = None
+        )
+    response = client.patch("/todos/1", json={'is_done': True})
+    assert response.status_code == 404
+    assert response.json() ==  {'detail' : "Todo Not Found"}
+ 
 
 
 
