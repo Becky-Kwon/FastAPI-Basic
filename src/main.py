@@ -50,6 +50,26 @@ def get_todos_handler(
         return todos[::-1]
     return todos
 
+# 현재 저장해둔 메모리가 따로 없으니 메모리 상에서 data를 만듬!
+todo_data = {
+    1: {
+        "id" : 1,
+        "contents" : "실전 FastAPI 섹션 0 수강",
+        "is_done" : True
+    },
+    2: {
+        "id" : 2,
+        "contents" : "실전 FastAPI 섹션 1 수강",
+        "is_done" : False
+    },
+    3: {
+        "id" : 3,
+        "contents" : "실전 FastAPI 섹션 2 수강",
+        "is_done" : False
+    }
+}
+
+
 # GET API 단일 조회  {} : sub path
 @app.get("/todos/{todo_id}" , status_code= 200)
 def get_todo_handler(todo_id : int):
