@@ -26,29 +26,12 @@ def health_check_handler():
 # 웹 서버 실행 후 코드를 변경하면, 웹 서버를 재시작 해야 변경사항이 SwaggerUI에 반영됩니다.
 # FastAPI 서버 종료 방법: Ctrl + C
 
-# 현재 저장해둔 메모리가 따로 없으니 메모리 상에서 data를 만듬!
-todo_data = {
-    1: {
-        "id" : 1,
-        "contents" : "실전 FastAPI 섹션 0 수강",
-        "is_done" : True
-    },
-    2: {
-        "id" : 2,
-        "contents" : "실전 FastAPI 섹션 1 수강",
-        "is_done" : False
-    },
-    3: {
-        "id" : 3,
-        "contents" : "실전 FastAPI 섹션 2 수강",
-        "is_done" : False
-    }
-}
 
 # default 200 인데, 명시적으로 적어주는게 좋음
 @app.get("/todos", status_code= 200) # resource는 복수형
 # query parameter 사용해보기 -> order
 # order값이 없어도 동작 할 수 있게 default로 None 하기
+
 # GET API 전체조회
 def get_todos_handler(
         order : str | None = None,
