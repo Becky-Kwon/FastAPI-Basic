@@ -84,7 +84,7 @@ def get_todo_handler(
     ) -> ToDoSchema:
     todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
     if todo:
-        return todo
+        return ToDoSchema.from_orm(todo)
     raise HTTPException(status_code=404, detail="Todo Not Found")
 
 
