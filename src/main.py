@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from database.connection import get_db
 from sqlalchemy.orm import Session
 
-from database.repository import get_todos
+from database.repository import get_todos, get_todo_by_todo_id
 from database.orm import ToDo
 from typing import List
 from schema.response import ListToDoResponse, ToDoSchema
@@ -77,8 +77,11 @@ todo_data = {
 
 # GET API 단일 조회  {} : sub path
 @app.get("/todos/{todo_id}" , status_code= 200)
-def get_todo_handler(todo_id : int):
-    todo = todo_data.get(todo_id)
+def get_todo_handler(
+    todo_id : int,
+    session: Session = Depends(get_db),
+    ) -> ToDoSchema:
+    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
     if todo:
         return todo
     raise HTTPException(status_code=404, detail="Todo Not Found")
