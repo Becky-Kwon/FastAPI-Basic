@@ -1,6 +1,4 @@
-from fastapi.testclient import TestClient
 from database.orm import ToDo
-from main import app
 
 # fixture 사용하면 정의 할 필요 없음
 # client = TestClient(app= app)
@@ -40,7 +38,7 @@ def test_get_todos(client):
 
 def test_get_todos_mocking(client, mocker):
     #order = ASC
-    mocker.patch("main.get_todos", return_value = [
+    mocker.patch("api.todo.get_todos", return_value = [
         ToDo(id=1, contents="FastAPI Section 0", is_done = True),
         ToDo(id=2, contents="FastAPI Section 1", is_done = False),
     ])
@@ -74,7 +72,7 @@ def test_get_todos_mocking(client, mocker):
 def test_get_todo(client, mocker):
     # 200
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     response = client.get("/todos/1")
@@ -83,7 +81,7 @@ def test_get_todo(client, mocker):
 
     # 404
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = None
         )
     response = client.get("/todos/1")
@@ -92,9 +90,9 @@ def test_get_todo(client, mocker):
 
 # 테스트 코드 - POST API
 def test_create_todo(client, mocker):
-    create_spy  = mocker.spy(ToDo, "create")   # main의 ToDo.create 부분을 spy함
+    create_spy  = mocker.spy(ToDo, "create")   #"api.todo의 ToDo.create 부분을 spy함
     mocker.patch(
-        "main.create_todo", 
+        "api.todo.create_todo", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     body = {
@@ -115,13 +113,13 @@ def test_create_todo(client, mocker):
 def test_update_todo(client, mocker):
     # 200
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     
     undone = mocker.patch.object(ToDo, "undone")
     mocker.patch(
-        "main.update_todo", 
+        "api.todo.update_todo", 
         return_value = ToDo(id=1, contents="todo", is_done = False)
         )
 
@@ -134,7 +132,7 @@ def test_update_todo(client, mocker):
 
     # 404
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = None
         )
     response = client.patch("/todos/1", json={'is_done': True})
@@ -146,17 +144,17 @@ def test_update_todo(client, mocker):
 def test_delete_todo(client, mocker):
     # 204
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
-    mocker.patch("main.delete_todo", return_value = None)
+    mocker.patch("api.todo.delete_todo", return_value = None)
 
     response = client.delete("/todos/1")
     assert response.status_code == 204
 
     # 404
     mocker.patch(
-        "main.get_todo_by_todo_id", 
+        "api.todo.get_todo_by_todo_id", 
         return_value = None
         )
     response = client.get("/todos/1")
@@ -167,4 +165,4 @@ def test_delete_todo(client, mocker):
 
 
 ## 만약에 pytest를 함수별로 보고 싶다면,
-# pytest tests/test_main.py::test_get_todo 이런식으로 실행하면됨
+# pytest tests/test"main.py::test_get_todo 이런식으로 실행하면됨
