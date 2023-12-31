@@ -1,11 +1,9 @@
 # API 분리 -  Router를 사용해 main.py에 연결
 from typing import List
 
-from fastapi import FastAPI, Body, HTTPException, Depends, APIRouter
-from sqlalchemy.orm import Session
+from fastapi import Body, HTTPException, Depends, APIRouter
 
-from database.connection import get_db
-from database.repository import get_todos, get_todo_by_todo_id, create_todo, update_todo, delete_todo
+from database.repository import ToDoRepository
 from database.orm import ToDo
 
 from schema.request import CreateToDoRequest
@@ -22,17 +20,20 @@ router = APIRouter(prefix='/todos')
 # query parameter 사용해보기 -> order
 # order값이 없어도 동작 할 수 있게 default로 None 하기
 
+# ToDoRepository = Depends(ToDoRepository) 에서 의존성주입의 의미에서 ToDoRepository = Depends() 랑 같음 ,클래스 같으니까 
+
+
 # GET API 전체조회
 def get_todos_handler(
         order : str | None = None,
-        session: Session = Depends(get_db)
+        todo_repo : ToDoRepository = Depends()
     )  -> ToDoListSchema :
     # ret = list(todo_data.values())
     # if order and order == "DESC" :
     #     return ret[::-1]
     # return ret
     # DB사용해서 조회해보기
-    todos: List[ToDo] = get_todos(session = session)
+    todos: List[ToDo] = todo_repo.get_todos()
     if order and order == "DESC" :
         return ToDoListSchema(
         todos = [ToDoSchema.from_orm(todo) for todo in todos[::-1]]
@@ -46,9 +47,9 @@ def get_todos_handler(
 @router.get("/{todo_id}" , status_code= 200)
 def get_todo_handler(
     todo_id : int,
-    session: Session = Depends(get_db),
+    todo_repo : ToDoRepository = Depends()
     ) -> ToDoSchema:
-    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
+    todo : ToDo | None = todo_repo.get_todo_by_todo_id(todo_id=todo_id)
     if todo:
         return ToDoSchema.from_orm(todo)
     raise HTTPException(status_code=404, detail="Todo Not Found")
@@ -64,10 +65,10 @@ def get_todo_handler(
 @router.post("", status_code=201)  # 생성 상태코드는 201
 def create_todo_handler(
     request : CreateToDoRequest,
-    session: Session = Depends(get_db)
+    todo_repo : ToDoRepository = Depends()
 ) -> ToDoSchema:
     todo : ToDo = ToDo.create(request=request)  # id 없음
-    todo : ToDo = create_todo(session=session, todo = todo)  # DB에 넣어졌다가 다시 나와서(refresh) id 생성되어 있음
+    todo : ToDo = todo_repo.create_todo(todo = todo)  # DB에 넣어졌다가 다시 나와서(refresh) id 생성되어 있음
     return ToDoSchema.from_orm(todo)
 # DB 에 이렇게 데이터 넣어주면, server를 내렸다가 올려도 데이터가 유지됨.
 
@@ -79,14 +80,14 @@ def update_todo_handler(
     is_done : bool = Body(..., embed = True),  #  ... 이니깐 required,
     # fast api는 리퀘스트 바디가 하나밖에 없으면 키값을 생략하고 리퀘스트 바디 안의 데이터만 해석하도록 되어있다.
     # ->  리퀘스트 바디의 key값을 넣어주고 싶다면 embed = True
-    session: Session = Depends(get_db)
+    todo_repo : ToDoRepository = Depends()
 ):
-    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
+    todo : ToDo | None = todo_repo.get_todo_by_todo_id(todo_id=todo_id)
     # orm.py에 done, undone 메소드로 is_done 인스턴스 가져와서 변경
     if todo:
         # update
         todo.done() if is_done else todo.undone() # 여기서 DB까지 수정된건 아님 -> repository에 함수 추가
-        todo : ToDo = update_todo(session=session, todo = todo) 
+        todo : ToDo = todo_repo.update_todo(todo = todo) 
         return ToDoSchema.from_orm(todo)
     raise HTTPException(status_code=404, detail="Todo Not Found")
 
@@ -98,13 +99,13 @@ def update_todo_handler(
 @router.delete("/{todo_id}", status_code= 204)  #204는 응답되는 body가 없음
 def delete_todo_handler(
     todo_id : int,
-    session: Session = Depends(get_db)
+    todo_repo : ToDoRepository = Depends()
 ):
-    todo : ToDo | None = get_todo_by_todo_id(session= session, todo_id=todo_id)
+    todo : ToDo | None = todo_repo.get_todo_by_todo_id(todo_id=todo_id)
     if not todo:
         raise HTTPException(status_code=404, detail="Todo Not Found")
     # delete
-    delete_todo(session=session, todo_id=todo_id)
+    todo_repo.delete_todo(todo_id=todo_id)
 # 정상으로 삭제되면 204 코드 뜸
  
 

@@ -1,4 +1,5 @@
 from database.orm import ToDo
+from database.repository import ToDoRepository
 
 # fixture 사용하면 정의 할 필요 없음
 # client = TestClient(app= app)
@@ -7,7 +8,7 @@ def test_health_check(client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"ping" : "pong"}
-
+"""
 def test_get_todos(client):
     response = client.get("/todos")
     assert response.status_code == 200
@@ -29,16 +30,16 @@ def test_get_todos(client):
             {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
             ]
         }
-
+"""
 # PyTest Mocking 사용해보기
 # Unit Test 를 작성할 때 외부에 의존하는 부분을 임의의 가짜로 대체하는 기법이 자주 사용되는데 이를 모킹 Mocking 이라고 한다.
 # 모킹 Mocking 은 외부 서비스에 의존하지 않고 독립적으로 실행이 가능한 Unit Test 를 작성하기 위해 사용되는 테스팅 기법 
 # pip install pytest-mock   
 
 
-def test_get_todos_mocking(client, mocker):
+def test_get_todos(client, mocker):
     #order = ASC
-    mocker.patch("api.todo.get_todos", return_value = [
+    mocker.patch.object(ToDoRepository, "get_todos", return_value = [
         ToDo(id=1, contents="FastAPI Section 0", is_done = True),
         ToDo(id=2, contents="FastAPI Section 1", is_done = False),
     ])
@@ -71,8 +72,9 @@ def test_get_todos_mocking(client, mocker):
 # 테스트 코드 - GET 단일 조회 API
 def test_get_todo(client, mocker):
     # 200
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     response = client.get("/todos/1")
@@ -80,8 +82,9 @@ def test_get_todo(client, mocker):
     assert response.json() ==  {"id": 1, "is_done": True, "contents": "todo"}
 
     # 404
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = None
         )
     response = client.get("/todos/1")
@@ -91,8 +94,9 @@ def test_get_todo(client, mocker):
 # 테스트 코드 - POST API
 def test_create_todo(client, mocker):
     create_spy  = mocker.spy(ToDo, "create")   #"api.todo의 ToDo.create 부분을 spy함
-    mocker.patch(
-        "api.todo.create_todo", 
+    mocker.patch.object(
+        ToDoRepository,
+        "create_todo", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     body = {
@@ -112,14 +116,16 @@ def test_create_todo(client, mocker):
 # 테스트 코드 - PATCH API (Update API)
 def test_update_todo(client, mocker):
     # 200
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
     
     undone = mocker.patch.object(ToDo, "undone")
-    mocker.patch(
-        "api.todo.update_todo", 
+    mocker.patch.object(
+        ToDoRepository,
+        "update_todo", 
         return_value = ToDo(id=1, contents="todo", is_done = False)
         )
 
@@ -131,8 +137,9 @@ def test_update_todo(client, mocker):
     assert response.json() ==  {"id": 1, "is_done": False, "contents": "todo"}
 
     # 404
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = None
         )
     response = client.patch("/todos/1", json={'is_done': True})
@@ -143,18 +150,20 @@ def test_update_todo(client, mocker):
 # 테스트 코드 - DELETE API
 def test_delete_todo(client, mocker):
     # 204
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = ToDo(id=1, contents="todo", is_done = True)
         )
-    mocker.patch("api.todo.delete_todo", return_value = None)
+    mocker.patch.object(ToDoRepository,"delete_todo", return_value = None)
 
     response = client.delete("/todos/1")
     assert response.status_code == 204
 
     # 404
-    mocker.patch(
-        "api.todo.get_todo_by_todo_id", 
+    mocker.patch.object(
+        ToDoRepository,
+        "get_todo_by_todo_id", 
         return_value = None
         )
     response = client.get("/todos/1")

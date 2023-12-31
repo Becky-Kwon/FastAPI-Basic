@@ -1,11 +1,13 @@
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from database.orm import ToDo
+from database.connection import get_db
+from fastapi import Depends
 from typing import List
 
-# repository 의 모든 def를 묶어서 class로 만듬 (래포지토리 패턴 실습)
+# repository 의 모든 def를 묶어서 class로 만듬 (래포지토리 패턴 실습) -> main 가서도 바꿔야함
 class ToDoRepository:
-    def __init__(self, session: Session):
+    def __init__(self, session: Session = Depends(get_db)):
         self.session = session
 
     # GET 전체 조회 API (DB통해서)
