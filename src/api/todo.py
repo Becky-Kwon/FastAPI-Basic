@@ -13,11 +13,12 @@ from schema.response import ToDoListSchema, ToDoSchema
 
 # API router객체 생성,@router -> router로 바꿈
 # main.py 코드도 router를 연결해주고, pytest 코드도 다 바꿔줘야함
-router = APIRouter()
-
+router = APIRouter(prefix='/todos')
+# '/todos'
+# /todos가 모든 API에 들어감 -> router의 prefix기능 사용해서 한번에 바꿔줌
 
 # default 200 인데, 명시적으로 적어주는게 좋음
-@router.get("/todos", status_code= 200) # resource는 복수형
+@router.get("", status_code= 200) # resource는 복수형
 # query parameter 사용해보기 -> order
 # order값이 없어도 동작 할 수 있게 default로 None 하기
 
@@ -42,7 +43,7 @@ def get_todos_handler(
 
 
 # GET API 단일 조회  {} : sub path
-@router.get("/todos/{todo_id}" , status_code= 200)
+@router.get("/{todo_id}" , status_code= 200)
 def get_todo_handler(
     todo_id : int,
     session: Session = Depends(get_db),
@@ -60,7 +61,7 @@ def get_todo_handler(
 # CreateToDoRequest 모듈 Refactoring으로 request.py로 넘어감
 
 # pydantic으로 받은 데이터를 orm으로 생성해줘야함
-@router.post("/todos", status_code=201)  # 생성 상태코드는 201
+@router.post("", status_code=201)  # 생성 상태코드는 201
 def create_todo_handler(
     request : CreateToDoRequest,
     session: Session = Depends(get_db)
@@ -72,7 +73,7 @@ def create_todo_handler(
 
 
 # PATCH API - 수정
-@router.patch("/todos/{todo_id}", status_code=200 )
+@router.patch("/{todo_id}", status_code=200 )
 def update_todo_handler(
     todo_id : int,
     is_done : bool = Body(..., embed = True),  #  ... 이니깐 required,
@@ -94,7 +95,7 @@ def update_todo_handler(
 # post, patch 해도 서버가 계속 꺼졌다 켜지면서 데이터 저장되지 않음
 
 # DELETE API - 삭제
-@router.delete("/todos/{todo_id}", status_code= 204)  #204는 응답되는 body가 없음
+@router.delete("/{todo_id}", status_code= 204)  #204는 응답되는 body가 없음
 def delete_todo_handler(
     todo_id : int,
     session: Session = Depends(get_db)
