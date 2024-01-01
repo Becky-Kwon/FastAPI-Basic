@@ -20,6 +20,13 @@ class ToDoSchema(BaseModel):
 class ToDoListSchema(BaseModel):
     todos: List[ToDoSchema]
 
+class UserSchema(BaseModel):
+    id: int
+    username: str
+    
+    class Config:
+        orm_mode = True
+
 
 # from database.orm import ToDo
 # todo = ToDo(id=100, contents='test', is_done=True)

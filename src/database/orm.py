@@ -50,3 +50,11 @@ class User(Base):
     username = Column(String(256), nullable=False)
     password = Column(String(256), nullable=False)
     todos = relationship("ToDo", lazy="joined")  # user가 join될 때 todo가 자동으로 조회됨
+
+    @classmethod
+    def create(cls, username: str, hashed_password: str) -> "User":
+        return cls(
+            username=username,
+            password=hashed_password
+        )
+    
