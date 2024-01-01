@@ -9,7 +9,7 @@ from database.orm import ToDo
 from schema.request import CreateToDoRequest
 from schema.response import ToDoListSchema, ToDoSchema
 
-# API router객체 생성,@router -> router로 바꿈
+# API router객체 생성,@app -> router로 바꿈
 # main.py 코드도 router를 연결해주고, pytest 코드도 다 바꿔줘야함
 router = APIRouter(prefix='/todos')
 # '/todos'
@@ -55,7 +55,7 @@ def get_todo_handler(
     raise HTTPException(status_code=404, detail="Todo Not Found")
 
 
-# uvicorn main@router --reload -> --reload 옵션 : 코드 변화가 감지되면 자동으로 fastapi를 재시작 함
+# uvicorn main@app --reload -> --reload 옵션 : 코드 변화가 감지되면 자동으로 fastapi를 재시작 함
 
 # POST API 생성 -> request body 필요 -> pydantic 사용
 # Refactoring 해줌
