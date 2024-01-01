@@ -49,4 +49,4 @@ class User(Base):
     id = Column(Integer, primary_key= True, index=True)
     username = Column(String(256), nullable=False)
     password = Column(String(256), nullable=False)
-    todos = relationship("ToDo", lazy="joined")
+    todos = relationship("ToDo", lazy="joined")  # user가 join될 때 todo가 자동으로 조회됨
