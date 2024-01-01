@@ -59,5 +59,10 @@ def user_log_in_handler(
     # 5. return jwt
     return JWTResponse(access_token=access_token)
 
-
-
+# 로그인 API확인해보고자 user table 업데이트
+# >>> import bcrypt
+# >>> password = "password".encode("UTF-8")
+# >>> h = bcrypt.hashpw(password, salt=bcrypt.gensalt())
+# >>> h.decode("UTF-8")
+#'$2b$12$OimOXlUsb8OrdrPJzCi8g.wqzCQahIJLwDHzZXI6b4SvNXoh6bQ8a'
+# mysql> update user set password = '$2b$12$OimOXlUsb8OrdrPJzCi8g.wqzCQahIJLwDHzZXI6b4SvNXoh6bQ8a'where id = 1;

@@ -16,7 +16,7 @@ class UserService:
     def verify_password(
         self, plain_password: str, hashed_password: str
     ) -> bool:
-        bcrypt.checkpw(
+        return bcrypt.checkpw(
             plain_password.encode(self.encoding),
             hashed_password.encode(self.encoding)
         )
