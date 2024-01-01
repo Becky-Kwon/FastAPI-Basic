@@ -23,9 +23,12 @@ class ToDoListSchema(BaseModel):
 class UserSchema(BaseModel):
     id: int
     username: str
-    
+
     class Config:
         orm_mode = True
+
+class JWTResponse(BaseModel):
+    access_token: str
 
 
 # from database.orm import ToDo
