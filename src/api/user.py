@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends,  HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from database.repository import UserRepository
-from schema.request import SignUpRequest, LogInRequest
+from schema.request import SignUpRequest, LogInRequest, CreateOTPRequest
 from schema.response import UserSchema, JWTResponse
 from service.user import UserService
 from database.orm import User
+from security import get_access_token
+from cache import redis_client
 
 router = APIRouter(prefix="/users")
 
@@ -66,3 +68,36 @@ def user_log_in_handler(
 # >>> h.decode("UTF-8")
 #'$2b$12$OimOXlUsb8OrdrPJzCi8g.wqzCQahIJLwDHzZXI6b4SvNXoh6bQ8a'
 # mysql> update user set password = '$2b$12$OimOXlUsb8OrdrPJzCi8g.wqzCQahIJLwDHzZXI6b4SvNXoh6bQ8a'where id = 1;
+
+
+# pip install redis
+# OTP 기능 만들기
+
+# 회원가입(username, password) / 로그인
+# 이메일 알림: 회원가입 -> 이메일 인증(otp) -> 유저 이메일 저장 -> 이메일 알림
+
+
+# POST / users/email/otp -> otp(key: email, value: 1234, exp: 3min)
+# POST / users/email/otp/verfiy -> request(email, otp) -> user(email)
+
+@router.post("/email/otp")
+def create_otp_handler(
+    request: CreateOTPRequest,
+    _: str = Depends(get_access_token),   #header에 검증만하고 사용은 안하니가 _ 처리
+    user_service: UserService = Depends()
+):
+    # 1. access_token
+    # 2. request body(email)
+    # 3. otp create(random 4 digit)
+    otp: int = user_service.create_otp()
+
+    # 4. redis otp(email, 1234, exp=3min)
+    redis_client.set(request.email, otp)
+    redis_client.expire(request.email, 3 * 60)
+    # 5. send otp to email
+    return {"otp":otp}
+
+
+@router.post("/email/otp/verify")
+def verify_otp_handler():
+    return
