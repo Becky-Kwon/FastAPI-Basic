@@ -3,11 +3,13 @@ from typing import List
 
 from fastapi import Body, HTTPException, Depends, APIRouter
 
-from database.repository import ToDoRepository
-from database.orm import ToDo
+from database.repository import ToDoRepository, UserRepository
+from database.orm import ToDo, User
 
 from schema.request import CreateToDoRequest
 from schema.response import ToDoListSchema, ToDoSchema
+from security import get_access_token
+from service.user import UserService
 
 # API router객체 생성,@app -> router로 바꿈
 # main.py 코드도 router를 연결해주고, pytest 코드도 다 바꿔줘야함
@@ -25,15 +27,26 @@ router = APIRouter(prefix='/todos')
 
 # GET API 전체조회
 def get_todos_handler(
+        access_token : str = Depends(get_access_token),
         order : str | None = None,
+        user_service : UserService = Depends(),
+        user_repo : UserRepository = Depends(),
         todo_repo : ToDoRepository = Depends()
     )  -> ToDoListSchema :
+
+    username: str = user_service.decode_jwt(access_token=access_token)
+    user : User | None = user_repo.get_user_by_username(username=username)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User Not Found")
+
+
     # ret = list(todo_data.values())
     # if order and order == "DESC" :
     #     return ret[::-1]
     # return ret
     # DB사용해서 조회해보기
-    todos: List[ToDo] = todo_repo.get_todos()
+    todos: List[ToDo] = user.todos
     if order and order == "DESC" :
         return ToDoListSchema(
         todos = [ToDoSchema.from_orm(todo) for todo in todos[::-1]]
