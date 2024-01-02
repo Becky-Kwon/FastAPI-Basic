@@ -41,5 +41,5 @@ class UserService:
         return payload["sub"] # username
     
     @staticmethod
-    def create_otp(self) -> int:
+    def create_otp() -> int:
         return random.randint(1000, 9999)
