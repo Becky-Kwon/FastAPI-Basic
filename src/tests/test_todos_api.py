@@ -1,5 +1,6 @@
-from database.orm import ToDo
-from database.repository import ToDoRepository
+from database.orm import ToDo, User
+from database.repository import ToDoRepository, UserRepository
+from service.user import UserService
 
 # fixture 사용하면 정의 할 필요 없음
 # client = TestClient(app= app)
@@ -9,32 +10,39 @@ from database.repository import ToDoRepository
 # 모킹 Mocking 은 외부 서비스에 의존하지 않고 독립적으로 실행이 가능한 Unit Test 를 작성하기 위해 사용되는 테스팅 기법 
 # pip install pytest-mock   
 
-
 def test_get_todos(client, mocker):
-    #order = ASC
-    mocker.patch.object(ToDoRepository, "get_todos", return_value = [
-        ToDo(id=1, contents="FastAPI Section 0", is_done = True),
-        ToDo(id=2, contents="FastAPI Section 1", is_done = False),
-    ])
-    response = client.get("/todos")
-    assert response.status_code == 200
-    assert response.json() == {
-        "todos" :[
-            {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
-            {"id": 2, "is_done": False, "contents": "FastAPI Section 1"},
-            ]
-        }
-    
-    # order = DESC
-    response = client.get("/todos?order=DESC")
-    assert response.status_code == 200
-    assert response.json() == {
-        "todos" :[
-            {"id": 2, "is_done": False, "contents": "FastAPI Section 1"},
-            {"id": 1, "is_done": True, "contents": "FastAPI Section 0"},
-            ]
-        }
+    access_token: str = UserService().create_jwt(username="test")
+    headers = {"Authorization": f"Bearer {access_token}"}
 
+    user = User(id=1, username="test", password="hashed")
+    user.todos = [
+        ToDo(id=1, contents="FastAPI Section 0", is_done=True),
+        ToDo(id=2, contents="FastAPI Section 1", is_done=False),
+    ]
+
+    mocker.patch.object(
+        UserRepository, "get_user_by_username", return_value=user
+    )
+
+    # order=ASC
+    response = client.get("/todos", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {
+        "todos": [
+            {"id": 1, "contents": "FastAPI Section 0", "is_done": True},
+            {"id": 2, "contents": "FastAPI Section 1", "is_done": False},
+        ]
+    }
+
+    # order=DESC
+    response = client.get("/todos?order=DESC", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {
+        "todos": [
+            {"id": 2, "contents": "FastAPI Section 1", "is_done": False},
+            {"id": 1, "contents": "FastAPI Section 0", "is_done": True},
+        ]
+    }
 
 # PyTest Fixture : 
     # client = TestClient(app= app)의 client 객체가 여러 곳에서 사용 가능하게,
