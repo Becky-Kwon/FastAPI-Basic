@@ -47,6 +47,6 @@ class UserService:
     
 
     @staticmethod
-    def send_email_to_user(self, email: str) -> None:
+    def send_email_to_user(email: str) -> None:
         time.sleep(10)   #실제 이메일 보내는 거 아님,,, 보내지는 시간 10초정도 주는 걸로함
         print(f"Sending emial to {email}!")
