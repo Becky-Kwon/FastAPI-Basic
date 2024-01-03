@@ -23,4 +23,4 @@ class CreateOTPRequest(BaseModel):
 
 class VerifyOTPRequest(BaseModel):
     email : str
-    oitp : int
+    otp : int
