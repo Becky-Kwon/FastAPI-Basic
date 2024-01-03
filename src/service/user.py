@@ -2,6 +2,7 @@ import bcrypt
 from jose import jwt
 from datetime import datetime, timedelta
 import random
+import time
 
 class UserService:
     encoding: str = "UTF-8"
@@ -43,3 +44,9 @@ class UserService:
     @staticmethod
     def create_otp() -> int:
         return random.randint(1000, 9999)
+    
+
+    @staticmethod
+    def send_email_to_user(self, email: str) -> None:
+        time.sleep(10)   #실제 이메일 보내는 거 아님,,, 보내지는 시간 10초정도 주는 걸로함
+        print(f"Sending emial to {email}!")

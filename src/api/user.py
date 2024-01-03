@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 
 from database.repository import UserRepository
 from schema.request import SignUpRequest, LogInRequest, CreateOTPRequest, VerifyOTPRequest
@@ -101,6 +101,7 @@ def create_otp_handler(
 @router.post("/email/otp/verify")
 def verify_otp_handler(
     request: VerifyOTPRequest,
+    background_tasks: BackgroundTasks,
     access_token: str = Depends(get_access_token),
     user_service: UserService = Depends(),
     user_repo: UserRepository = Depends()
@@ -119,5 +120,13 @@ def verify_otp_handler(
     user: User | None = user_repo.get_user_by_username(username)
     if not user:
         raise HTTPException(status_code=404, detail="User Not Found")
+    
     # 5.save email to user
+
+    # 6.send email to user (인증 완료 이메일 보내기)
+    background_tasks.add_task(
+        user_service.send_email_to_user, 
+        email="admin@fastapi.com"
+        )  # 기존에는 Server : Request -> verify otp -> send email (10sec) -> Response 
+    # Backgroundtask 적용하면 : Background ->   다른 쓰레드를 통해 동작     -> send email(10sec) ; 응답은 바로 하고 이메일 보내느건 따로 처리
     return UserSchema.from_orm(user)
